@@ -58,4 +58,4 @@ typings/
 .env
 
 ios/build/
-.idea
+.idea/
