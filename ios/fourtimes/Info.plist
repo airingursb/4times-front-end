@@ -53,7 +53,7 @@
 	</dict>
 	<key>UIAppFonts</key>
 	<array>
-		<string>font/SourceHanSerifCN-Regular.ttf</string>
+		<string>fonts/SourceHanSerifCN-Regular.ttf</string>
 	</array>
 </dict>
 </plist>

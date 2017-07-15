@@ -1,9 +1,3 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- * @flow
- */
-
 import React, {Component} from 'react';
 import {
   AppRegistry,
@@ -11,17 +5,16 @@ import {
   Animated,
   TouchableOpacity,
   Dimensions,
-  StatusBar
+  StatusBar,
+  Easing,
+  TextInput
 } from 'react-native';
-import Carousel from './src/common/Carousel';
+import Carousel from './src/components/Carousel';
+import HttpUtil from './src/common/HttpUtil';
 import {Image, Text, View} from 'react-native-animatable';
 
 const {width, height} = Dimensions.get('window');
-let _leftAnmValueHandler_0,
-  _topAnmValueHandler_0,
-  _leftAnmValueHandler_1,
-  _topAnmValueHandler_1,
-  pageNumber = 0;
+let pageNumber = 0;
 
 export default class fourtimes extends Component {
   constructor(props) {
@@ -31,7 +24,8 @@ export default class fourtimes extends Component {
       topAnmValue: new Animated.Value(0),
       size: {width, height},
       toggledOn: false,
-      page: 0
+      page: 0,
+      cityText: ''
     }
   }
 
@@ -41,28 +35,34 @@ export default class fourtimes extends Component {
     _leftAnmValueHandler_0 = Animated.timing(this.state.leftAnmValue, {
       toValue: 0,
       duration: 500,
+      easing: Easing.bezier(0.86, 0.18, 0.82, 1.32)
     });
     _topAnmValueHandler_0 = Animated.timing(this.state.topAnmValue, {
       toValue: 0,
       duration: 500,
+      easing: Easing.bezier(0.86, 0.18, 0.82, 1.32)
     });
 
     _leftAnmValueHandler_1 = Animated.timing(this.state.leftAnmValue, {
       toValue: 213 / 375 * width,
       duration: 500,
+      easing: Easing.bezier(0.86, 0.18, 0.82, 1.32)
     });
     _topAnmValueHandler_1 = Animated.timing(this.state.topAnmValue, {
       toValue: 245 / 667 * height,
       duration: 500,
+      easing: Easing.bezier(0.86, 0.18, 0.82, 1.32)
     });
 
     _leftAnmValueHandler_2 = Animated.timing(this.state.leftAnmValue, {
       toValue: -315 / 375 * width,
       duration: 500,
+      easing: Easing.bezier(0.86, 0.18, 0.82, 1.32)
     });
     _topAnmValueHandler_2 = Animated.timing(this.state.topAnmValue, {
       toValue: 580 / 667 * height,
       duration: 500,
+      easing: Easing.bezier(0.86, 0.18, 0.82, 1.32)
     });
   }
 
@@ -108,7 +108,17 @@ export default class fourtimes extends Component {
       pageView = <View><Text>Setting</Text></View>
     }
     else if (this.state.page === 2) {
-      pageView = <View><Text>Location</Text></View>;
+      pageView = <View>
+        <Image style={styles.titleCity} source={require('./res/images/card-city.png')}/>
+        <TextInput
+          underlineColorAndroid='transparent'
+          placeholder={"在這裡搜索"}
+          placeholderTextColor={"#C0C0C0"}
+          style={styles.textInputCity}
+          onChangeText={(text) => {
+            this.setState({cityText: text})
+          }}/>
+      </View>
     }
     return (
       <View style={styles.container} onLayout={this._onLayoutDidChange}>
@@ -139,7 +149,7 @@ export default class fourtimes extends Component {
                 top: this.state.topAnmValue
               }, this.state.size]}>
               <Image style={styles.weatherPicture}
-                     source={require('./res/image/sunny.png')}>
+                     source={require('./res/images/sunny.png')}>
                 <View style={styles.bar}>
                   <TouchableOpacity onPress={() => {
                     this._clickMore();
@@ -149,8 +159,9 @@ export default class fourtimes extends Component {
                     })
                   }}>
                     <Image style={[styles.iconMore, toggledOn && styles.toggledOn]}
-                           source={require('./res/image/icon-more.png')}
-                           transition={['rotate']}/>
+                           source={require('./res/images/icon-more.png')}
+                           transition={['rotate']}
+                           duration={500}/>
                   </TouchableOpacity>
                   <Text style={styles.title}>广州市</Text>
                   <TouchableOpacity onPress={() => {
@@ -160,7 +171,7 @@ export default class fourtimes extends Component {
                     })
                   }}>
                     <Image style={styles.iconLocation}
-                           source={require('./res/image/icon-location.png')}/>
+                           source={require('./res/images/icon-location.png')}/>
                   </TouchableOpacity>
                 </View>
               </Image>
@@ -175,7 +186,7 @@ export default class fourtimes extends Component {
           <View style={[styles.container, this.state.size]}>
             <View ref='card1' style={styles.card1}>
               <Image style={styles.cardImage}
-                     source={require('./res/image/card-sunny.png')}>
+                     source={require('./res/images/card-sunny.png')}>
                 <Text style={styles.date}>明天</Text>
                 <Text style={styles.weatherInfo}>晴朗</Text>
                 <Text style={styles.temperatureInfo}>26~35℃</Text>
@@ -183,7 +194,7 @@ export default class fourtimes extends Component {
             </View>
             <View ref='card2' style={styles.card2}>
               <Image style={styles.cardImage}
-                     source={require('./res/image/card-rainy.png')}>
+                     source={require('./res/images/card-rainy.png')}>
                 <Text style={styles.date}>星期一</Text>
                 <Text style={styles.weatherInfo}>中雨</Text>
                 <Text style={styles.temperatureInfo}>24~31℃</Text>
@@ -191,7 +202,7 @@ export default class fourtimes extends Component {
             </View>
             <View ref='card3' style={styles.card3}>
               <Image style={styles.cardImage}
-                     source={require('./res/image/card-cloudy.png')}>
+                     source={require('./res/images/card-cloudy.png')}>
                 <Text style={styles.date}>星期二</Text>
                 <Text style={styles.weatherInfo}>阴天</Text>
                 <Text style={styles.temperatureInfo}>26~34℃</Text>
@@ -279,6 +290,7 @@ const styles = StyleSheet.create({
     marginTop: 77 / 667 * height,
     fontSize: 14,
     fontFamily: 'PingFang SC',
+    fontWeight: '100',
     color: '#6E6E6E'
   },
   card1: {
@@ -304,6 +316,7 @@ const styles = StyleSheet.create({
   date: {
     marginTop: 9,
     fontSize: 20,
+    fontFamily: 'SourceHanSerifCN',
     color: '#363636',
     backgroundColor: "rgba(0,0,0,0)"
   },
@@ -311,13 +324,33 @@ const styles = StyleSheet.create({
     marginTop: 24,
     fontSize: 14,
     color: '#363636',
+    fontFamily: 'SourceHanSerifCN',
     backgroundColor: "rgba(0,0,0,0)",
   },
   temperatureInfo: {
     marginTop: 3,
     fontSize: 14,
     color: '#363636',
+    fontFamily: 'SourceHanSerifCN',
     backgroundColor: "rgba(0,0,0,0)",
+  },
+  titleCity: {
+    marginLeft: 25 / 375 * width,
+    marginTop: 27 / 667 * height,
+    width: 325 / 375 * width,
+    height: 174 / 667 * height
+  },
+  textInputCity: {
+    fontFamily: "PingFang SC",
+    fontSize: 14,
+    width: 325 / 375 * width,
+    height: 36 / 667 * height,
+    alignItems: "center",
+    backgroundColor: "#F4F4F4",
+    marginTop: 38 / 667 * height,
+    marginLeft: 25 / 375 * width,
+    paddingLeft: 17 / 375 * width,
+    borderRadius: 20 / 375 * width,
   }
 });
 
