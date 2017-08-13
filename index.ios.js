@@ -25,6 +25,7 @@ export default class fourtimes extends Component {
       size: {width, height},
       toggledOn: false,
       page: 0,
+      leftPage: 1,
       cityText: ''
     }
   }
@@ -104,8 +105,48 @@ export default class fourtimes extends Component {
   render() {
     const {toggledOn} = this.state;
     let pageView;
+    let homeView;
     if (this.state.page === 1) {
-      pageView = <View><Text>Setting</Text></View>
+      pageView = <View>
+        <View style={styles.leftCardTop}>
+          <TouchableOpacity onPress={() => {
+            this._clickMore();
+            this.setState({
+              leftPage: 1
+            })
+          }}>
+            <Image source={require('./res/images/left-card-weather.png')}/>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.leftCard}>
+          <TouchableOpacity onPress={() => {
+            this._clickMore();
+            this.setState({
+              leftPage: 2
+            })
+          }}>
+            <Image source={require('./res/images/left-card-author.png')}/>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.leftCard}>
+          <TouchableOpacity onPress={() => {
+          }}>
+            <Image source={require('./res/images/left-card-feedback.png')}/>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.leftCard}>
+          <TouchableOpacity onPress={() => {
+          }}>
+            <Image source={require('./res/images/left-card-web.png')}/>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.leftCard}>
+          <TouchableOpacity onPress={() => {
+          }}>
+            <Image source={require('./res/images/left-card-about.png')}/>
+          </TouchableOpacity>
+        </View>
+      </View>
     }
     else if (this.state.page === 2) {
       pageView = <View>
@@ -120,8 +161,75 @@ export default class fourtimes extends Component {
           }}/>
       </View>
     }
+    if (this.state.leftPage === 1) {
+      homeView = <View>
+        <Image style={styles.weatherPicture}
+               source={require('./res/images/sunny.png')}>
+          <View style={styles.bar}>
+            <TouchableOpacity onPress={() => {
+              this._clickMore();
+              this.setState({
+                toggledOn: !toggledOn,
+                page: 1
+              })
+            }}>
+              <Image style={[styles.iconMore, toggledOn && styles.toggledOn]}
+                     source={require('./res/images/icon-more.png')}
+                     transition={['rotate']}
+                     duration={500}/>
+            </TouchableOpacity>
+            <Text style={styles.title}>广州市</Text>
+            <TouchableOpacity onPress={() => {
+              this._clickLocation();
+              this.setState({
+                page: 2
+              })
+            }}>
+              <Image style={styles.iconLocation}
+                     source={require('./res/images/icon-location.png')}/>
+            </TouchableOpacity>
+          </View>
+        </Image>
+
+        <View style={styles.infoContainer}>
+          <Text style={styles.weather}>晴</Text>
+          <Text style={styles.temperature}>34℃</Text>
+          <Text style={styles.info}>26-34℃ / 東南風 3 级</Text>
+        </View>
+      </View>
+    } else if (this.state.leftPage === 2) {
+      homeView = <View>
+        <Image style={styles.pagePicture}
+               source={require('./res/images/author-page.png')}>
+          <View style={styles.bar}>
+            <TouchableOpacity onPress={() => {
+              this._clickMore();
+              this.setState({
+                toggledOn: !toggledOn,
+                page: 1
+              })
+            }}>
+              <Image style={[styles.iconMore, toggledOn && styles.toggledOn]}
+                     source={require('./res/images/icon-more-black.png')}
+                     transition={['rotate']}
+                     duration={500}/>
+            </TouchableOpacity>
+            <Text style={styles.title_black_4}>作者介绍</Text>
+            <TouchableOpacity onPress={() => {
+              this._clickLocation();
+              this.setState({
+                page: 2
+              })
+            }}>
+              <Image style={styles.iconLocation}
+                     source={require('./res/images/icon-location-black.png')}/>
+            </TouchableOpacity>
+          </View>
+        </Image>
+      </View>
+    }
     return (
-      <View style={styles.container} onLayout={this._onLayoutDidChange}>
+      <View ref='home' style={styles.container} onLayout={this._onLayoutDidChange}>
         <StatusBar
           backgroundColor='#ff0000'
           translucent={true}
@@ -148,39 +256,7 @@ export default class fourtimes extends Component {
                 left: this.state.leftAnmValue,
                 top: this.state.topAnmValue
               }, this.state.size]}>
-              <Image style={styles.weatherPicture}
-                     source={require('./res/images/sunny.png')}>
-                <View style={styles.bar}>
-                  <TouchableOpacity onPress={() => {
-                    this._clickMore();
-                    this.setState({
-                      toggledOn: !toggledOn,
-                      page: 1
-                    })
-                  }}>
-                    <Image style={[styles.iconMore, toggledOn && styles.toggledOn]}
-                           source={require('./res/images/icon-more.png')}
-                           transition={['rotate']}
-                           duration={500}/>
-                  </TouchableOpacity>
-                  <Text style={styles.title}>广州市</Text>
-                  <TouchableOpacity onPress={() => {
-                    this._clickLocation();
-                    this.setState({
-                      page: 2
-                    })
-                  }}>
-                    <Image style={styles.iconLocation}
-                           source={require('./res/images/icon-location.png')}/>
-                  </TouchableOpacity>
-                </View>
-              </Image>
-
-              <View style={styles.infoContainer}>
-                <Text style={styles.weather}>晴</Text>
-                <Text style={styles.temperature}>34℃</Text>
-                <Text style={styles.info}>26-34℃ / 東南風 3 级</Text>
-              </View>
+              {homeView}
             </Animated.View>
           </View>
           <View style={[styles.container, this.state.size]}>
@@ -242,6 +318,10 @@ const styles = StyleSheet.create({
     width: width,
     height: 330 / 667 * height
   },
+  pagePicture: {
+    width: width,
+    height: height
+  },
   iconMore: {
     position: 'absolute',
     width: 18 / 375 * width,
@@ -259,6 +339,15 @@ const styles = StyleSheet.create({
     left: 162 / 375 * width,
     top: 18 / 667 * height,
     color: 'white',
+    backgroundColor: "rgba(0,0,0,0)",
+    fontSize: 17,
+    fontFamily: 'SourceHanSerifCN'
+  },
+  title_black_4: {
+    position: 'absolute',
+    left: 152 / 375 * width,
+    top: 18 / 667 * height,
+    color: '#666',
     backgroundColor: "rgba(0,0,0,0)",
     fontSize: 17,
     fontFamily: 'SourceHanSerifCN'
@@ -351,6 +440,18 @@ const styles = StyleSheet.create({
     marginLeft: 25 / 375 * width,
     paddingLeft: 17 / 375 * width,
     borderRadius: 20 / 375 * width,
+  },
+  leftCardTop: {
+    width: 325 / 375 * width,
+    flexDirection: 'row',
+    marginTop: 37 / 667 * height,
+    marginLeft: 25 / 375 * width,
+  },
+  leftCard: {
+    width: 325 / 375 * width,
+    flexDirection: 'row',
+    marginTop: 14 / 667 * height,
+    marginLeft: 25 / 375 * width,
   }
 });
 
