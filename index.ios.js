@@ -130,18 +130,30 @@ export default class fourtimes extends Component {
         </View>
         <View style={styles.leftCard}>
           <TouchableOpacity onPress={() => {
+            this._clickMore();
+            this.setState({
+              leftPage: 3
+            })
           }}>
             <Image source={require('./res/images/left-card-feedback.png')}/>
           </TouchableOpacity>
         </View>
         <View style={styles.leftCard}>
           <TouchableOpacity onPress={() => {
+            this._clickMore();
+            this.setState({
+              leftPage: 4
+            })
           }}>
             <Image source={require('./res/images/left-card-web.png')}/>
           </TouchableOpacity>
         </View>
         <View style={styles.leftCard}>
           <TouchableOpacity onPress={() => {
+            this._clickMore();
+            this.setState({
+              leftPage: 5
+            })
           }}>
             <Image source={require('./res/images/left-card-about.png')}/>
           </TouchableOpacity>
@@ -227,7 +239,42 @@ export default class fourtimes extends Component {
           </View>
         </Image>
       </View>
+    } else if (this.state.leftPage === 3) {
+
+    } else if (this.state.leftPage === 4) {
+
+    } else if (this.state.leftPage === 5) {
+      homeView = <View>
+        <Image style={styles.pagePicture}
+               source={require('./res/images/about-page.png')}>
+          <View style={styles.bar}>
+            <TouchableOpacity onPress={() => {
+              this._clickMore();
+              this.setState({
+                toggledOn: !toggledOn,
+                page: 1
+              })
+            }}>
+              <Image style={[styles.iconMore, toggledOn && styles.toggledOn]}
+                     source={require('./res/images/icon-more-black.png')}
+                     transition={['rotate']}
+                     duration={500}/>
+            </TouchableOpacity>
+            <Text style={styles.title_black_2}>关于</Text>
+            <TouchableOpacity onPress={() => {
+              this._clickLocation();
+              this.setState({
+                page: 2
+              })
+            }}>
+              <Image style={styles.iconLocation}
+                     source={require('./res/images/icon-location-black.png')}/>
+            </TouchableOpacity>
+          </View>
+        </Image>
+      </View>
     }
+
     return (
       <View ref='home' style={styles.container} onLayout={this._onLayoutDidChange}>
         <StatusBar
@@ -339,6 +386,15 @@ const styles = StyleSheet.create({
     left: 162 / 375 * width,
     top: 18 / 667 * height,
     color: 'white',
+    backgroundColor: "rgba(0,0,0,0)",
+    fontSize: 17,
+    fontFamily: 'SourceHanSerifCN'
+  },
+  title_black_2: {
+    position: 'absolute',
+    left: 170 / 375 * width,
+    top: 18 / 667 * height,
+    color: '#666',
     backgroundColor: "rgba(0,0,0,0)",
     fontSize: 17,
     fontFamily: 'SourceHanSerifCN'
