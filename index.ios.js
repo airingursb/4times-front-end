@@ -26,7 +26,9 @@ export default class fourtimes extends Component {
       toggledOn: false,
       page: 0,
       leftPage: 1,
-      cityText: ''
+      cityText: '',
+      FeedBackContent: '',
+      FeedBackConnect: ''
     }
   }
 
@@ -240,7 +242,56 @@ export default class fourtimes extends Component {
         </Image>
       </View>
     } else if (this.state.leftPage === 3) {
-
+      homeView = <View>
+        <View style={styles.bar}>
+          <TouchableOpacity onPress={() => {
+            this._clickMore();
+            this.setState({
+              toggledOn: !toggledOn,
+              page: 1
+            })
+          }}>
+            <Image style={[styles.iconMore, toggledOn && styles.toggledOn]}
+                   source={require('./res/images/icon-more-black.png')}
+                   transition={['rotate']}
+                   duration={500}/>
+          </TouchableOpacity>
+          <Text style={styles.title_black_2}>反馈</Text>
+          <TouchableOpacity onPress={() => {
+            this._clickLocation();
+            this.setState({
+              page: 2
+            })
+          }}>
+            <Image style={styles.iconLocation}
+                   source={require('./res/images/icon-location-black.png')}/>
+          </TouchableOpacity>
+        </View>
+        <Image style={styles.iconFeedback}
+               source={require('./res/images/icon-feedback.png')}/>
+        <TextInput
+          underlineColorAndroid='transparent'
+          placeholder={"这里输入您的意见~"}
+          placeholderTextColor={"#C0C0C0"}
+          style={styles.textInputContent}
+          multiline={true}
+          onChangeText={(text) => {
+            this.setState({FeedBackContent: text})
+          }}/>
+        <TextInput
+          underlineColorAndroid='transparent'
+          placeholder={"记得留下您的联系方式哦~"}
+          placeholderTextColor={"#C0C0C0"}
+          style={styles.textInputConnect}
+          onChangeText={(text) => {
+            this.setState({FeedBackConnect: text})
+          }}/>
+        <TouchableOpacity onPress={() => {
+        }}>
+          <Image style={styles.iconSend}
+                 source={require('./res/images/icon-sent.png')}/>
+        </TouchableOpacity>
+      </View>
     } else if (this.state.leftPage === 4) {
 
     } else if (this.state.leftPage === 5) {
@@ -497,6 +548,32 @@ const styles = StyleSheet.create({
     paddingLeft: 17 / 375 * width,
     borderRadius: 20 / 375 * width,
   },
+  textInputContent: {
+    fontFamily: "PingFang SC",
+    fontSize: 14,
+    width: 325 / 375 * width,
+    height: 106 / 667 * height,
+    alignItems: "center",
+    backgroundColor: "#F4F4F4",
+    marginTop: 10 / 667 * height,
+    marginLeft: 25 / 375 * width,
+    paddingLeft: 16 / 375 * width,
+    paddingTop: 16 / 375 * width,
+    borderRadius: 5 / 375 * width,
+  },
+  textInputConnect: {
+    fontFamily: "PingFang SC",
+    fontSize: 14,
+    lineHeight: 14,
+    width: 325 / 375 * width,
+    height: 48 / 667 * height,
+    alignItems: "center",
+    backgroundColor: "#F4F4F4",
+    marginTop: 20 / 667 * height,
+    marginLeft: 25 / 375 * width,
+    paddingLeft: 16 / 375 * width,
+    borderRadius: 5 / 375 * width,
+  },
   leftCardTop: {
     width: 325 / 375 * width,
     flexDirection: 'row',
@@ -508,6 +585,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginTop: 14 / 667 * height,
     marginLeft: 25 / 375 * width,
+  },
+  iconFeedback: {
+    marginTop: 65 / 667 * height,
+    marginLeft: 152 / 375 * width,
+    width: 72 / 375 * width,
+    height: 72 / 667 * height
+  },
+  iconSend: {
+    marginTop: 36 / 667 * height,
+    marginLeft: 315 / 375 * width,
   }
 });
 
