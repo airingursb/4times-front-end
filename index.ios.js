@@ -28,11 +28,53 @@ export default class fourtimes extends Component {
       leftPage: 1,
       cityText: '',
       FeedBackContent: '',
-      FeedBackConnect: ''
+      FeedBackConnect: '',
+      longitude: 0,
+      latitude: 0,
+      city: '北京市',
+      now: {
+        weather: '晴',
+        temperature: '29',
+        wind_direction: '東南風',
+        wind_power: '3级'
+      },
+      f1: {},
+      f2: {},
+      f3: {},
+      f4: {}
     }
   }
 
   componentDidMount() {
+
+    navigator.geolocation.watchPosition(
+      (position) => {
+        let longitude = JSON.stringify(position.coords.longitude);
+        let latitude = JSON.stringify(position.coords.latitude);
+        console.log(longitude + ' ' +latitude);
+        this.setState({
+          longitude: longitude,
+          latitude: latitude
+        });
+        HttpUtil.get('?from=1&lat='+ latitude +'&lng=' + longitude + '&need3HourForcast=0&needAlarm=0&needHourData=0&needIndex=0&needMoreDay=1')
+          .then(res => {
+            console.log(res);
+            this.setState({
+              city: res.showapi_res_body.cityInfo.c5 + '市',
+              now: res.showapi_res_body.now,
+              f1: res.showapi_res_body.f1,
+              f2: res.showapi_res_body.f2,
+              f3: res.showapi_res_body.f3,
+              f4: res.showapi_res_body.f4
+            });
+          })
+      },
+      (error) =>{
+        console.log(error);
+      },
+      {enableHighAccuracy: true, timeout: 5000, maximumAge: 1000}
+    );
+
     // 0: home, 1: setting, 2: location, 3: more
 
     _leftAnmValueHandler_0 = Animated.timing(this.state.leftAnmValue, {
@@ -102,6 +144,18 @@ export default class fourtimes extends Component {
 
   _pushMorePage() {
     // this.refs.card1.transitionTo({opacity: 0.2});
+  }
+
+  _toWeekday(d) {
+    switch (d) {
+      case 1: return '一';
+      case 2: return '二';
+      case 3: return '三';
+      case 4: return '四';
+      case 5: return '五';
+      case 6: return '六';
+      case 7: return '日';
+    }
   }
 
   render() {
@@ -192,7 +246,7 @@ export default class fourtimes extends Component {
                      transition={['rotate']}
                      duration={500}/>
             </TouchableOpacity>
-            <Text style={styles.title}>广州市</Text>
+            <Text style={styles.title}>{this.state.city}</Text>
             <TouchableOpacity onPress={() => {
               this._clickLocation();
               this.setState({
@@ -206,9 +260,9 @@ export default class fourtimes extends Component {
         </Image>
 
         <View style={styles.infoContainer}>
-          <Text style={styles.weather}>晴</Text>
-          <Text style={styles.temperature}>34℃</Text>
-          <Text style={styles.info}>26-34℃ / 東南風 3 级</Text>
+          <Text style={styles.weather}>{this.state.now.weather}</Text>
+          <Text style={styles.temperature}>{this.state.now.temperature}℃</Text>
+          <Text style={styles.info}>{this.state.f1.night_air_temperature}-{this.state.f1.day_air_temperature}℃ / {this.state.now.wind_direction} {this.state.now.wind_power.replace('级','')} 级</Text>
         </View>
       </View>
     } else if (this.state.leftPage === 2) {
@@ -362,24 +416,24 @@ export default class fourtimes extends Component {
               <Image style={styles.cardImage}
                      source={require('./res/images/card-sunny.png')}>
                 <Text style={styles.date}>明天</Text>
-                <Text style={styles.weatherInfo}>晴朗</Text>
-                <Text style={styles.temperatureInfo}>26~35℃</Text>
+                <Text style={styles.weatherInfo}>{this.state.f2.day_weather}</Text>
+                <Text style={styles.temperatureInfo}>{this.state.f2.night_air_temperature}~{this.state.f2.day_air_temperature}℃</Text>
               </Image>
             </View>
             <View ref='card2' style={styles.card2}>
               <Image style={styles.cardImage}
                      source={require('./res/images/card-rainy.png')}>
-                <Text style={styles.date}>星期一</Text>
-                <Text style={styles.weatherInfo}>中雨</Text>
-                <Text style={styles.temperatureInfo}>24~31℃</Text>
+                <Text style={styles.date}>星期{this._toWeekday(this.state.f3.weekday)}</Text>
+                <Text style={styles.weatherInfo}>{this.state.f3.day_weather}</Text>
+                <Text style={styles.temperatureInfo}>{this.state.f3.night_air_temperature}~{this.state.f3.day_air_temperature}℃</Text>
               </Image>
             </View>
             <View ref='card3' style={styles.card3}>
               <Image style={styles.cardImage}
                      source={require('./res/images/card-cloudy.png')}>
-                <Text style={styles.date}>星期二</Text>
-                <Text style={styles.weatherInfo}>阴天</Text>
-                <Text style={styles.temperatureInfo}>26~34℃</Text>
+                <Text style={styles.date}>星期{this._toWeekday(this.state.f4.weekday)}</Text>
+                <Text style={styles.weatherInfo}>{this.state.f4.day_weather}</Text>
+                <Text style={styles.temperatureInfo}>{this.state.f4.night_air_temperature}~{this.state.f4.day_air_temperature}℃</Text>
               </Image>
             </View>
           </View>
