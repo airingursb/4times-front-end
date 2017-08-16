@@ -14,7 +14,6 @@ import HttpUtil from './src/common/HttpUtil';
 import {Image, Text, View} from 'react-native-animatable';
 
 const {width, height} = Dimensions.get('window');
-let pageNumber = 0;
 
 export default class fourtimes extends Component {
   constructor(props) {
@@ -25,6 +24,7 @@ export default class fourtimes extends Component {
       size: {width, height},
       toggledOn: false,
       page: 0,
+      pageNumber: 0,
       leftPage: 1,
       cityText: '',
       FeedBackContent: '',
@@ -51,12 +51,12 @@ export default class fourtimes extends Component {
       (position) => {
         let longitude = JSON.stringify(position.coords.longitude);
         let latitude = JSON.stringify(position.coords.latitude);
-        console.log(longitude + ' ' +latitude);
+        console.log(longitude + ' ' + latitude);
         this.setState({
           longitude: longitude,
           latitude: latitude
         });
-        HttpUtil.get('?from=1&lat='+ latitude +'&lng=' + longitude + '&need3HourForcast=0&needAlarm=0&needHourData=0&needIndex=0&needMoreDay=1')
+        HttpUtil.get('?from=1&lat=' + latitude + '&lng=' + longitude + '&need3HourForcast=0&needAlarm=0&needHourData=0&needIndex=0&needMoreDay=1')
           .then(res => {
             console.log(res);
             this.setState({
@@ -69,7 +69,7 @@ export default class fourtimes extends Component {
             });
           })
       },
-      (error) =>{
+      (error) => {
         console.log(error);
       },
       {enableHighAccuracy: true, timeout: 5000, maximumAge: 1000}
@@ -100,7 +100,7 @@ export default class fourtimes extends Component {
     });
 
     _leftAnmValueHandler_2 = Animated.timing(this.state.leftAnmValue, {
-      toValue: -315 / 375 * width,
+      toValue: -300 / 375 * width,
       duration: 500,
       easing: Easing.bezier(0.86, 0.18, 0.82, 1.32)
     });
@@ -112,28 +112,28 @@ export default class fourtimes extends Component {
   }
 
   _clickMore() {
-    if (pageNumber === 0) {
+    if (this.state.pageNumber === 0) {
       _leftAnmValueHandler_1.start && _leftAnmValueHandler_1.start();
       _topAnmValueHandler_1.start && _topAnmValueHandler_1.start();
-      pageNumber = 1
+      this.setState({pageNumber: 1})
     }
-    else if (pageNumber === 1) {
+    else if (this.state.pageNumber === 1) {
       _leftAnmValueHandler_0.start && _leftAnmValueHandler_0.start();
       _topAnmValueHandler_0.start && _topAnmValueHandler_0.start();
-      pageNumber = 0
+      this.setState({pageNumber: 0})
     }
   }
 
   _clickLocation() {
-    if (pageNumber === 0) {
+    if (this.state.pageNumber === 0) {
       _leftAnmValueHandler_2.start && _leftAnmValueHandler_2.start();
       _topAnmValueHandler_2.start && _topAnmValueHandler_2.start();
-      pageNumber = 2
+      this.setState({pageNumber: 2})
     }
-    else if (pageNumber === 2) {
+    else if (this.state.pageNumber === 2) {
       _leftAnmValueHandler_0.start && _leftAnmValueHandler_0.start();
       _topAnmValueHandler_0.start && _topAnmValueHandler_0.start();
-      pageNumber = 0
+      this.setState({pageNumber: 0})
     }
   }
 
@@ -148,13 +148,20 @@ export default class fourtimes extends Component {
 
   _toWeekday(d) {
     switch (d) {
-      case 1: return '一';
-      case 2: return '二';
-      case 3: return '三';
-      case 4: return '四';
-      case 5: return '五';
-      case 6: return '六';
-      case 7: return '日';
+      case 1:
+        return '一';
+      case 2:
+        return '二';
+      case 3:
+        return '三';
+      case 4:
+        return '四';
+      case 5:
+        return '五';
+      case 6:
+        return '六';
+      case 7:
+        return '日';
     }
   }
 
@@ -162,6 +169,9 @@ export default class fourtimes extends Component {
     const {toggledOn} = this.state;
     let pageView;
     let homeView;
+    let f2CardView;
+    let f3CardView;
+    let f4CardView;
     if (this.state.page === 1) {
       pageView = <View>
         <View style={styles.leftCardTop}>
@@ -232,7 +242,7 @@ export default class fourtimes extends Component {
     if (this.state.leftPage === 1) {
       homeView = <View>
         <Image style={styles.weatherPicture}
-               source={require('./res/images/sunny.png')}>
+               source={{uri: 'https://airing.ursb.me/image/4times/weather_' + this.state.now.weather_code + '.png-yasuo.jpg'}}>
           <View style={styles.bar}>
             <TouchableOpacity onPress={() => {
               this._clickMore();
@@ -259,12 +269,13 @@ export default class fourtimes extends Component {
           </View>
         </Image>
 
-        <View style={styles.infoContainer}>
-          <Text style={styles.weather}>{this.state.now.weather}</Text>
-          <Text style={styles.temperature}>{this.state.now.temperature}℃</Text>
-          <Text style={styles.info}>{this.state.f1.night_air_temperature}-{this.state.f1.day_air_temperature}℃ / {this.state.now.wind_direction} {this.state.now.wind_power.replace('级','')} 级</Text>
-        </View>
+      <View style={styles.infoContainer}>
+        <Text style={styles.weather}>{this.state.now.weather}</Text>
+        <Text style={styles.temperature}>{this.state.now.temperature}℃</Text>
+        <Text style={styles.info}>{this.state.f1.night_air_temperature}-{this.state.f1.day_air_temperature}℃
+          / {this.state.now.wind_direction} {this.state.now.wind_power.replace('级', '')} 级</Text>
       </View>
+    </View>
     } else if (this.state.leftPage === 2) {
       homeView = <View>
         <Image style={styles.pagePicture}
@@ -380,6 +391,174 @@ export default class fourtimes extends Component {
       </View>
     }
 
+    if (this.state.f2.day_weather_code === '00') {
+      f2CardView = <View ref='card1' style={styles.card1}>
+        <Image style={styles.cardImage}
+               source={require('./res/images/card-sunny.png')}>
+          <Text style={styles.date}>明天</Text>
+          <Text style={styles.weatherInfo}>{this.state.f2.day_weather}</Text>
+          <Text style={styles.temperatureInfo}>{this.state.f2.night_air_temperature}~{this.state.f2.day_air_temperature}℃</Text>
+        </Image>
+      </View>
+    } else if (this.state.f2.day_weather_code === '01') {
+      f2CardView = <View ref='card1' style={styles.card1}>
+        <Image style={styles.cardImage}
+               source={require('./res/images/card-cloudy01.png')}>
+          <Text style={styles.date}>明天</Text>
+          <Text style={styles.weatherInfo}>{this.state.f2.day_weather}</Text>
+          <Text style={styles.temperatureInfo}>{this.state.f2.night_air_temperature}~{this.state.f2.day_air_temperature}℃</Text>
+        </Image>
+      </View>
+    } else if (this.state.f2.day_weather_code === '02' || this.state.f2.day_weather_code === '18') {
+      f2CardView = <View ref='card1' style={styles.card1}>
+        <Image style={styles.cardImage}
+               source={require('./res/images/card-cloudy.png')}>
+          <Text style={styles.date}>明天</Text>
+          <Text style={styles.weatherInfo}>{this.state.f2.day_weather}</Text>
+          <Text style={styles.temperatureInfo}>{this.state.f2.night_air_temperature}~{this.state.f2.day_air_temperature}℃</Text>
+        </Image>
+      </View>
+    } else if (this.state.f2.day_weather_code === '03' || this.state.f2.day_weather_code === '04' || this.state.f2.day_weather_code === '05' || this.state.f2.day_weather_code === '06' || this.state.f2.day_weather_code === '07' || this.state.f2.day_weather_code === '08' || this.state.f2.day_weather_code === '09' || this.state.f2.day_weather_code === '10' || this.state.f2.day_weather_code === '11' || this.state.f2.day_weather_code === '12' || this.state.f2.day_weather_code === '21' || this.state.f2.day_weather_code === '22' || this.state.f2.day_weather_code === '23' || this.state.f2.day_weather_code === '24' || this.state.f2.day_weather_code === '25' || this.state.f2.day_weather_code === '19' || this.state.f2.day_weather_code === '301') {
+      f2CardView = <View ref='card1' style={styles.card1}>
+        <Image style={styles.cardImage}
+               source={require('./res/images/card-rainy.png')}>
+          <Text style={styles.date}>明天</Text>
+          <Text style={styles.weatherInfo}>{this.state.f2.day_weather}</Text>
+          <Text style={styles.temperatureInfo}>{this.state.f2.night_air_temperature}~{this.state.f2.day_air_temperature}℃</Text>
+        </Image>
+      </View>
+    } else if (this.state.f2.day_weather_code === '13' || this.state.f2.day_weather_code === '14' || this.state.f2.day_weather_code === '15' || this.state.f2.day_weather_code === '16' || this.state.f2.day_weather_code === '17' || this.state.f2.day_weather_code === '26' || this.state.f2.day_weather_code === '27' || this.state.f2.day_weather_code === '28' || this.state.f2.day_weather_code === '302') {
+      f2CardView = <View ref='card1' style={styles.card1}>
+        <Image style={styles.cardImage}
+               source={require('./res/images/card-snowy.png')}>
+          <Text style={styles.date}>明天</Text>
+          <Text style={styles.weatherInfo}>{this.state.f2.day_weather}</Text>
+          <Text style={styles.temperatureInfo}>{this.state.f2.night_air_temperature}~{this.state.f2.day_air_temperature}℃</Text>
+        </Image>
+      </View>
+    } else if (this.state.f2.day_weather_code === '20' || this.state.f2.day_weather_code === '29' || this.state.f2.day_weather_code === '30' || this.state.f2.day_weather_code === '31' || this.state.f2.day_weather_code === '53') {
+      f2CardView = <View ref='card1' style={styles.card1}>
+        <Image style={styles.cardImage}
+               source={require('./res/images/card-rainy.png')}>
+          <Text style={styles.date}>明天</Text>
+          <Text style={styles.weatherInfo}>{this.state.f2.day_weather}</Text>
+          <Text style={styles.temperatureInfo}>{this.state.f2.night_air_temperature}~{this.state.f2.day_air_temperature}℃</Text>
+        </Image>
+      </View>
+    }
+
+    if (this.state.f3.day_weather_code === '00') {
+      f3CardView = <View ref='card2' style={styles.card2}>
+        <Image style={styles.cardImage}
+               source={require('./res/images/card-sunny.png')}>
+          <Text style={styles.date}>星期{this._toWeekday(this.state.f3.weekday)}</Text>
+          <Text style={styles.weatherInfo}>{this.state.f3.day_weather}</Text>
+          <Text style={styles.temperatureInfo}>{this.state.f3.night_air_temperature}~{this.state.f3.day_air_temperature}℃</Text>
+        </Image>
+      </View>
+    } else if (this.state.f3.day_weather_code === '01') {
+      f3CardView = <View ref='card2' style={styles.card2}>
+        <Image style={styles.cardImage}
+               source={require('./res/images/card-cloudy01.png')}>
+          <Text style={styles.date}>星期{this._toWeekday(this.state.f3.weekday)}</Text>
+          <Text style={styles.weatherInfo}>{this.state.f3.day_weather}</Text>
+          <Text style={styles.temperatureInfo}>{this.state.f3.night_air_temperature}~{this.state.f3.day_air_temperature}℃</Text>
+        </Image>
+      </View>
+    } else if (this.state.f3.day_weather_code === '02' || this.state.f3.day_weather_code === '18') {
+      f3CardView = <View ref='card2' style={styles.card2}>
+        <Image style={styles.cardImage}
+               source={require('./res/images/card-cloudy.png')}>
+          <Text style={styles.date}>星期{this._toWeekday(this.state.f3.weekday)}</Text>
+          <Text style={styles.weatherInfo}>{this.state.f3.day_weather}</Text>
+          <Text style={styles.temperatureInfo}>{this.state.f3.night_air_temperature}~{this.state.f3.day_air_temperature}℃</Text>
+        </Image>
+      </View>
+    } else if (this.state.f3.day_weather_code === '03' || this.state.f3.day_weather_code === '04' || this.state.f3.day_weather_code === '05' || this.state.f3.day_weather_code === '06' || this.state.f3.day_weather_code === '07' || this.state.f3.day_weather_code === '08' || this.state.f3.day_weather_code === '09' || this.state.f3.day_weather_code === '10' || this.state.f3.day_weather_code === '11' || this.state.f3.day_weather_code === '12' || this.state.f3.day_weather_code === '21' || this.state.f3.day_weather_code === '22' || this.state.f3.day_weather_code === '23' || this.state.f3.day_weather_code === '24' || this.state.f3.day_weather_code === '25' || this.state.f3.day_weather_code === '19' || this.state.f3.day_weather_code === '301') {
+      f3CardView = <View ref='card2' style={styles.card2}>
+        <Image style={styles.cardImage}
+               source={require('./res/images/card-rainy.png')}>
+          <Text style={styles.date}>星期{this._toWeekday(this.state.f3.weekday)}</Text>
+          <Text style={styles.weatherInfo}>{this.state.f3.day_weather}</Text>
+          <Text style={styles.temperatureInfo}>{this.state.f3.night_air_temperature}~{this.state.f3.day_air_temperature}℃</Text>
+        </Image>
+      </View>
+    } else if (this.state.f3.day_weather_code === '13' || this.state.f3.day_weather_code === '14' || this.state.f3.day_weather_code === '15' || this.state.f3.day_weather_code === '16' || this.state.f3.day_weather_code === '17' || this.state.f3.day_weather_code === '26' || this.state.f3.day_weather_code === '27' || this.state.f3.day_weather_code === '28' || this.state.f3.day_weather_code === '302') {
+      f3CardView = <View ref='card2' style={styles.card2}>
+        <Image style={styles.cardImage}
+               source={require('./res/images/card-snowy.png')}>
+          <Text style={styles.date}>星期{this._toWeekday(this.state.f3.weekday)}</Text>
+          <Text style={styles.weatherInfo}>{this.state.f3.day_weather}</Text>
+          <Text style={styles.temperatureInfo}>{this.state.f3.night_air_temperature}~{this.state.f3.day_air_temperature}℃</Text>
+        </Image>
+      </View>
+    } else if (this.state.f3.day_weather_code === '20' || this.state.f3.day_weather_code === '29' || this.state.f3.day_weather_code === '30' || this.state.f3.day_weather_code === '31' || this.state.f3.day_weather_code === '53') {
+      f3CardView = <View ref='card2' style={styles.card2}>
+        <Image style={styles.cardImage}
+               source={require('./res/images/card-rainy.png')}>
+          <Text style={styles.date}>星期{this._toWeekday(this.state.f3.weekday)}</Text>
+          <Text style={styles.weatherInfo}>{this.state.f3.day_weather}</Text>
+          <Text style={styles.temperatureInfo}>{this.state.f3.night_air_temperature}~{this.state.f3.day_air_temperature}℃</Text>
+        </Image>
+      </View>
+    }
+
+    if (this.state.f4.day_weather_code === '00') {
+      f4CardView = <View ref='card3' style={styles.card3}>
+        <Image style={styles.cardImage}
+               source={require('./res/images/card-sunny.png')}>
+          <Text style={styles.date}>星期{this._toWeekday(this.state.f4.weekday)}</Text>
+          <Text style={styles.weatherInfo}>{this.state.f4.day_weather}</Text>
+          <Text style={styles.temperatureInfo}>{this.state.f4.night_air_temperature}~{this.state.f4.day_air_temperature}℃</Text>
+        </Image>
+      </View>
+    } else if (this.state.f4.day_weather_code === '01') {
+      f4CardView = <View ref='card3' style={styles.card3}>
+        <Image style={styles.cardImage}
+               source={require('./res/images/card-cloudy01.png')}>
+          <Text style={styles.date}>星期{this._toWeekday(this.state.f4.weekday)}</Text>
+          <Text style={styles.weatherInfo}>{this.state.f4.day_weather}</Text>
+          <Text style={styles.temperatureInfo}>{this.state.f4.night_air_temperature}~{this.state.f4.day_air_temperature}℃</Text>
+        </Image>
+      </View>
+    } else if (this.state.f4.day_weather_code === '02' || this.state.f4.day_weather_code === '18') {
+      f4CardView = <View ref='card3' style={styles.card3}>
+        <Image style={styles.cardImage}
+               source={require('./res/images/card-cloudy.png')}>
+          <Text style={styles.date}>星期{this._toWeekday(this.state.f4.weekday)}</Text>
+          <Text style={styles.weatherInfo}>{this.state.f4.day_weather}</Text>
+          <Text style={styles.temperatureInfo}>{this.state.f4.night_air_temperature}~{this.state.f4.day_air_temperature}℃</Text>
+        </Image>
+      </View>
+    } else if (this.state.f4.day_weather_code === '03' || this.state.f4.day_weather_code === '04' || this.state.f4.day_weather_code === '05' || this.state.f4.day_weather_code === '06' || this.state.f4.day_weather_code === '07' || this.state.f4.day_weather_code === '08' || this.state.f4.day_weather_code === '09' || this.state.f4.day_weather_code === '10' || this.state.f4.day_weather_code === '11' || this.state.f4.day_weather_code === '12' || this.state.f4.day_weather_code === '21' || this.state.f4.day_weather_code === '22' || this.state.f4.day_weather_code === '23' || this.state.f4.day_weather_code === '24' || this.state.f4.day_weather_code === '25' || this.state.f4.day_weather_code === '19' || this.state.f4.day_weather_code === '301') {
+      f4CardView = <View ref='card3' style={styles.card3}>
+        <Image style={styles.cardImage}
+               source={require('./res/images/card-rainy.png')}>
+          <Text style={styles.date}>星期{this._toWeekday(this.state.f4.weekday)}</Text>
+          <Text style={styles.weatherInfo}>{this.state.f4.day_weather}</Text>
+          <Text style={styles.temperatureInfo}>{this.state.f4.night_air_temperature}~{this.state.f4.day_air_temperature}℃</Text>
+        </Image>
+      </View>
+    } else if (this.state.f4.day_weather_code === '13' || this.state.f4.day_weather_code === '14' || this.state.f4.day_weather_code === '15' || this.state.f4.day_weather_code === '16' || this.state.f4.day_weather_code === '17' || this.state.f4.day_weather_code === '26' || this.state.f4.day_weather_code === '27' || this.state.f4.day_weather_code === '28' || this.state.f4.day_weather_code === '302') {
+      f4CardView = <View ref='card3' style={styles.card3}>
+        <Image style={styles.cardImage}
+               source={require('./res/images/card-snowy.png')}>
+          <Text style={styles.date}>星期{this._toWeekday(this.state.f4.weekday)}</Text>
+          <Text style={styles.weatherInfo}>{this.state.f4.day_weather}</Text>
+          <Text style={styles.temperatureInfo}>{this.state.f4.night_air_temperature}~{this.state.f4.day_air_temperature}℃</Text>
+        </Image>
+      </View>
+    } else if (this.state.f4.day_weather_code === '20' || this.state.f4.day_weather_code === '29' || this.state.f4.day_weather_code === '30' || this.state.f4.day_weather_code === '31' || this.state.f4.day_weather_code === '53') {
+      f4CardView = <View ref='card3' style={styles.card3}>
+        <Image style={styles.cardImage}
+               source={require('./res/images/card-rainy.png')}>
+          <Text style={styles.date}>星期{this._toWeekday(this.state.f4.weekday)}</Text>
+          <Text style={styles.weatherInfo}>{this.state.f4.day_weather}</Text>
+          <Text style={styles.temperatureInfo}>{this.state.f4.night_air_temperature}~{this.state.f4.day_air_temperature}℃</Text>
+        </Image>
+      </View>
+    }
+
     return (
       <View ref='home' style={styles.container} onLayout={this._onLayoutDidChange}>
         <StatusBar
@@ -412,30 +591,9 @@ export default class fourtimes extends Component {
             </Animated.View>
           </View>
           <View style={[styles.container, this.state.size]}>
-            <View ref='card1' style={styles.card1}>
-              <Image style={styles.cardImage}
-                     source={require('./res/images/card-sunny.png')}>
-                <Text style={styles.date}>明天</Text>
-                <Text style={styles.weatherInfo}>{this.state.f2.day_weather}</Text>
-                <Text style={styles.temperatureInfo}>{this.state.f2.night_air_temperature}~{this.state.f2.day_air_temperature}℃</Text>
-              </Image>
-            </View>
-            <View ref='card2' style={styles.card2}>
-              <Image style={styles.cardImage}
-                     source={require('./res/images/card-rainy.png')}>
-                <Text style={styles.date}>星期{this._toWeekday(this.state.f3.weekday)}</Text>
-                <Text style={styles.weatherInfo}>{this.state.f3.day_weather}</Text>
-                <Text style={styles.temperatureInfo}>{this.state.f3.night_air_temperature}~{this.state.f3.day_air_temperature}℃</Text>
-              </Image>
-            </View>
-            <View ref='card3' style={styles.card3}>
-              <Image style={styles.cardImage}
-                     source={require('./res/images/card-cloudy.png')}>
-                <Text style={styles.date}>星期{this._toWeekday(this.state.f4.weekday)}</Text>
-                <Text style={styles.weatherInfo}>{this.state.f4.day_weather}</Text>
-                <Text style={styles.temperatureInfo}>{this.state.f4.night_air_temperature}~{this.state.f4.day_air_temperature}℃</Text>
-              </Image>
-            </View>
+            {f2CardView}
+            {f3CardView}
+            {f4CardView}
           </View>
         </Carousel>
       </View>
