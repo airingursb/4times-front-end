@@ -8,13 +8,17 @@ import {
   Dimensions,
   StatusBar,
   Easing,
-  TextInput
+  TextInput,
+  AsyncStorage,
+  AlertIOS
 } from 'react-native';
 import Carousel from './src/components/Carousel';
 import HttpUtil from './src/common/HttpUtil';
 import {Image, Text, View} from 'react-native-animatable';
 
 const {width, height} = Dimensions.get('window');
+const HOST_GPS = 'https://ali-weather.showapi.com/gps-to-weather';
+const HOST_POSITION = 'https://ali-weather.showapi.com/area-to-weather';
 
 export default class fourtimes extends Component {
   constructor(props) {
@@ -33,6 +37,10 @@ export default class fourtimes extends Component {
       FeedBackConnect: '',
       longitude: 0,
       latitude: 0,
+      city1: '',
+      city2: '',
+      city3: '',
+      citys: '',
       city: '北京市',
       now: {
         weather: '晴',
@@ -49,6 +57,15 @@ export default class fourtimes extends Component {
   }
 
   componentWillMount() {
+
+    AsyncStorage.getItem('citys', (error, result) => {
+      if (!error) {
+        if (result !== '' && result !== null) {
+          this.state.citys = result
+        }
+      }
+    });
+
     navigator.geolocation.watchPosition(
       (position) => {
         if (!this.state.getPosition) {
@@ -62,18 +79,22 @@ export default class fourtimes extends Component {
             longitude: longitude,
             latitude: latitude
           });
-          HttpUtil.get('?from=1&lat=' + latitude + '&lng=' + longitude + '&need3HourForcast=0&needAlarm=0&needHourData=0&needIndex=0&needMoreDay=1')
+          HttpUtil.get(HOST_GPS + '?from=1&lat=' + latitude + '&lng=' + longitude + '&need3HourForcast=0&needAlarm=0&needHourData=0&needIndex=0&needMoreDay=1')
             .then(res => {
-              console.log(res);
-              this.setState({
-                city: res.showapi_res_body.cityInfo.c5 + '市',
-                now: res.showapi_res_body.now,
-                f1: res.showapi_res_body.f1,
-                f2: res.showapi_res_body.f2,
-                f3: res.showapi_res_body.f3,
-                f4: res.showapi_res_body.f4,
-                getPosition: false
-              });
+              if (res.showapi_res_code === 0) {
+                console.log(res);
+                this.setState({
+                  city: res.showapi_res_body.cityInfo.c5 + '市',
+                  now: res.showapi_res_body.now,
+                  f1: res.showapi_res_body.f1,
+                  f2: res.showapi_res_body.f2,
+                  f3: res.showapi_res_body.f3,
+                  f4: res.showapi_res_body.f4,
+                  getPosition: false
+                });
+              } else {
+                AlertIOS('Sorry! 无法自动定位到您所在的城市。')
+              }
             })
         }
       },
@@ -246,9 +267,92 @@ export default class fourtimes extends Component {
           placeholder={"在這裡搜索"}
           placeholderTextColor={"#C0C0C0"}
           style={styles.textInputCity}
+          returnKeyType='done'
+          onSubmitEditing={()=>{
+            HttpUtil.get(HOST_POSITION + '?area=' + this.state.cityText + '&need3HourForcast=0&needAlarm=0&needHourData=0&needIndex=0&needMoreDay=1')
+              .then(res => {
+                console.log(res);
+                if (res.showapi_res_code === 0) {
+                  this.state.city = res.showapi_res_body.cityInfo.c5 + '市';
+                  this.state.now = res.showapi_res_body.now;
+                  this.state.f1 = res.showapi_res_body.f1;
+                  this.state.f2 = res.showapi_res_body.f2;
+                  this.state.f3 = res.showapi_res_body.f3;
+                  this.state.f4 = res.showapi_res_body.f4;
+                  this.state.citys = this.state.citys + this.state.city + ',';
+                  AsyncStorage.setItem('citys', this.state.citys);
+                  this._clickLocation()
+                } else {
+                  AlertIOS('查询不到该城市！')
+                }
+              })
+          }}
           onChangeText={(text) => {
             this.setState({cityText: text})
           }}/>
+        <View style={styles.cityContainer}>
+          <Text style={styles.alwaysCity}>常用城市</Text>
+          <TouchableOpacity onPress={()=>{
+            HttpUtil.get(HOST_POSITION + '?area=' + this.state.citys.substr(0, this.state.citys.length - 1).split(',')[this.state.citys.substr(0, this.state.citys.length - 1).split(',').length - 1] + '&need3HourForcast=0&needAlarm=0&needHourData=0&needIndex=0&needMoreDay=1').then(res => {
+              console.log(res);
+              if (res.showapi_res_code === 0) {
+                this.state.city = res.showapi_res_body.cityInfo.c5 + '市';
+                this.state.now = res.showapi_res_body.now;
+                this.state.f1 = res.showapi_res_body.f1;
+                this.state.f2 = res.showapi_res_body.f2;
+                this.state.f3 = res.showapi_res_body.f3;
+                this.state.f4 = res.showapi_res_body.f4;
+                this.state.citys = this.state.citys + this.state.city + ',';
+                AsyncStorage.setItem('citys', this.state.citys);
+                this._clickLocation()
+              } else {
+                AlertIOS('查询不到该城市！')
+              }
+            })
+          }}>
+            <Text style={styles.alwaysCityContent}>{this.state.citys.substr(0, this.state.citys.length - 1).split(',')[this.state.citys.substr(0, this.state.citys.length - 1).split(',').length - 1]}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={()=>{
+            HttpUtil.get(HOST_POSITION + '?area=' + this.state.citys.substr(0, this.state.citys.length - 1).split(',')[this.state.citys.substr(0, this.state.citys.length - 1).split(',').length - 2] + '&need3HourForcast=0&needAlarm=0&needHourData=0&needIndex=0&needMoreDay=1').then(res => {
+              console.log(res);
+              if (res.showapi_res_code === 0) {
+                this.state.city = res.showapi_res_body.cityInfo.c5 + '市';
+                this.state.now = res.showapi_res_body.now;
+                this.state.f1 = res.showapi_res_body.f1;
+                this.state.f2 = res.showapi_res_body.f2;
+                this.state.f3 = res.showapi_res_body.f3;
+                this.state.f4 = res.showapi_res_body.f4;
+                this.state.citys = this.state.citys + this.state.city + ',';
+                AsyncStorage.setItem('citys', this.state.citys);
+                this._clickLocation()
+              } else {
+                AlertIOS('查询不到该城市！')
+              }
+            })
+          }}>
+            <Text style={styles.alwaysCityContent}>{this.state.citys.substr(0, this.state.citys.length - 1).split(',')[this.state.citys.substr(0, this.state.citys.length - 1).split(',').length - 2]}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={()=>{
+            HttpUtil.get(HOST_POSITION + '?area=' + this.state.citys.substr(0, this.state.citys.length - 1).split(',')[this.state.citys.substr(0, this.state.citys.length - 1).split(',').length - 3] + '&need3HourForcast=0&needAlarm=0&needHourData=0&needIndex=0&needMoreDay=1').then(res => {
+              console.log(res);
+              if (res.showapi_res_code === 0) {
+                this.state.city = res.showapi_res_body.cityInfo.c5 + '市';
+                this.state.now = res.showapi_res_body.now;
+                this.state.f1 = res.showapi_res_body.f1;
+                this.state.f2 = res.showapi_res_body.f2;
+                this.state.f3 = res.showapi_res_body.f3;
+                this.state.f4 = res.showapi_res_body.f4;
+                this.state.citys = this.state.citys + this.state.city + ',';
+                AsyncStorage.setItem('citys', this.state.citys);
+                this._clickLocation()
+              } else {
+                AlertIOS('查询不到该城市！')
+              }
+            })
+          }}>
+            <Text style={styles.alwaysCityContent}>{this.state.citys.substr(0, this.state.citys.length - 1).split(',')[this.state.citys.substr(0, this.state.citys.length - 1).split(',').length - 3]}</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     }
     if (this.state.leftPage === 1) {
@@ -989,6 +1093,21 @@ const styles = StyleSheet.create({
     left: 0,
     width: width,
     height: 617 / 667 * height
+  },
+  cityContainer: {
+    width: width,
+    marginTop: 50 / 667 * height,
+    marginLeft: 25 / 375 * width
+  },
+  alwaysCity: {
+    color: '#b2b2b2',
+    fontSize: 14
+  },
+  alwaysCityContent: {
+    color: '#363636',
+    fontSize: 24,
+    lineHeight: 33 / 667 * height,
+    marginTop: 11 / 667 * height
   }
 });
 

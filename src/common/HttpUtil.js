@@ -1,14 +1,12 @@
-const HOST = 'https://ali-weather.showapi.com/gps-to-weather';
-
 export default class HttpUtils {
 
   static get(url) {
     return new Promise((resolve, reject) => {
-      fetch(HOST + url, {
+      fetch(url, {
         method: "GET",
         headers: {
           // APPCODE 申请：https://market.aliyun.com/products/57096001/cmapi010812.html?spm=5176.2020520132.101.5.M9gquA#sku=yuncode481200005
-          "Authorization": "APPCODE " + '请输入自己的APPCODE'
+          "Authorization": "APPCODE " + ''
         }
       })
         .then(response => response.json())
