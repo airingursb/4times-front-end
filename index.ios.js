@@ -4,6 +4,7 @@ import {
   StyleSheet,
   Animated,
   TouchableOpacity,
+  WebView,
   Dimensions,
   StatusBar,
   Easing,
@@ -23,6 +24,7 @@ export default class fourtimes extends Component {
       topAnmValue: new Animated.Value(0),
       size: {width, height},
       toggledOn: false,
+      locationOn: false,
       page: 0,
       pageNumber: 0,
       leftPage: 1,
@@ -41,33 +43,39 @@ export default class fourtimes extends Component {
       f1: {},
       f2: {},
       f3: {},
-      f4: {}
+      f4: {},
+      getPosition: false
     }
   }
 
-  componentDidMount() {
-
+  componentWillMount() {
     navigator.geolocation.watchPosition(
       (position) => {
-        let longitude = JSON.stringify(position.coords.longitude);
-        let latitude = JSON.stringify(position.coords.latitude);
-        console.log(longitude + ' ' + latitude);
-        this.setState({
-          longitude: longitude,
-          latitude: latitude
-        });
-        HttpUtil.get('?from=1&lat=' + latitude + '&lng=' + longitude + '&need3HourForcast=0&needAlarm=0&needHourData=0&needIndex=0&needMoreDay=1')
-          .then(res => {
-            console.log(res);
-            this.setState({
-              city: res.showapi_res_body.cityInfo.c5 + '市',
-              now: res.showapi_res_body.now,
-              f1: res.showapi_res_body.f1,
-              f2: res.showapi_res_body.f2,
-              f3: res.showapi_res_body.f3,
-              f4: res.showapi_res_body.f4
-            });
-          })
+        if (!this.state.getPosition) {
+          this.setState({
+            getPosition: true
+          });
+          let longitude = JSON.stringify(position.coords.longitude);
+          let latitude = JSON.stringify(position.coords.latitude);
+          console.log(longitude + ' ' + latitude);
+          this.setState({
+            longitude: longitude,
+            latitude: latitude
+          });
+          HttpUtil.get('?from=1&lat=' + latitude + '&lng=' + longitude + '&need3HourForcast=0&needAlarm=0&needHourData=0&needIndex=0&needMoreDay=1')
+            .then(res => {
+              console.log(res);
+              this.setState({
+                city: res.showapi_res_body.cityInfo.c5 + '市',
+                now: res.showapi_res_body.now,
+                f1: res.showapi_res_body.f1,
+                f2: res.showapi_res_body.f2,
+                f3: res.showapi_res_body.f3,
+                f4: res.showapi_res_body.f4,
+                getPosition: false
+              });
+            })
+        }
       },
       (error) => {
         console.log(error);
@@ -112,28 +120,31 @@ export default class fourtimes extends Component {
   }
 
   _clickMore() {
+    const {toggledOn} = this.state;
+
     if (this.state.pageNumber === 0) {
       _leftAnmValueHandler_1.start && _leftAnmValueHandler_1.start();
       _topAnmValueHandler_1.start && _topAnmValueHandler_1.start();
-      this.setState({pageNumber: 1})
+      this.setState({pageNumber: 1, toggledOn: !toggledOn})
     }
     else if (this.state.pageNumber === 1) {
       _leftAnmValueHandler_0.start && _leftAnmValueHandler_0.start();
       _topAnmValueHandler_0.start && _topAnmValueHandler_0.start();
-      this.setState({pageNumber: 0})
+      this.setState({pageNumber: 0, toggledOn: !toggledOn})
     }
   }
 
   _clickLocation() {
+    const {locationOn} = this.state;
     if (this.state.pageNumber === 0) {
       _leftAnmValueHandler_2.start && _leftAnmValueHandler_2.start();
       _topAnmValueHandler_2.start && _topAnmValueHandler_2.start();
-      this.setState({pageNumber: 2})
+      this.setState({pageNumber: 2, locationOn: !locationOn})
     }
     else if (this.state.pageNumber === 2) {
       _leftAnmValueHandler_0.start && _leftAnmValueHandler_0.start();
       _topAnmValueHandler_0.start && _topAnmValueHandler_0.start();
-      this.setState({pageNumber: 0})
+      this.setState({pageNumber: 0, locationOn: !locationOn})
     }
   }
 
@@ -166,12 +177,13 @@ export default class fourtimes extends Component {
   }
 
   render() {
-    const {toggledOn} = this.state;
+    const {toggledOn, locationOn} = this.state;
     let pageView;
     let homeView;
     let f2CardView;
     let f3CardView;
     let f4CardView;
+
     if (this.state.page === 1) {
       pageView = <View>
         <View style={styles.leftCardTop}>
@@ -241,153 +253,303 @@ export default class fourtimes extends Component {
     }
     if (this.state.leftPage === 1) {
       homeView = <View>
-        <Image style={styles.weatherPicture}
-               source={{uri: 'https://airing.ursb.me/image/4times/weather_' + this.state.now.weather_code + '.png-yasuo.jpg'}}>
-          <View style={styles.bar}>
-            <TouchableOpacity onPress={() => {
+        <TouchableOpacity
+          disabled={!toggledOn && !locationOn}
+          onPress={() => {
+            if (toggledOn && !locationOn) {
               this._clickMore();
               this.setState({
-                toggledOn: !toggledOn,
                 page: 1
               })
-            }}>
-              <Image style={[styles.iconMore, toggledOn && styles.toggledOn]}
-                     source={require('./res/images/icon-more.png')}
-                     transition={['rotate']}
-                     duration={500}/>
-            </TouchableOpacity>
-            <Text style={styles.title}>{this.state.city}</Text>
-            <TouchableOpacity onPress={() => {
+            } else if (!toggledOn && locationOn) {
               this._clickLocation();
               this.setState({
                 page: 2
               })
-            }}>
-              <Image style={styles.iconLocation}
-                     source={require('./res/images/icon-location.png')}/>
-            </TouchableOpacity>
+            }
+          }}>
+          <Image style={styles.weatherPicture}
+                 source={{uri: 'https://airing.ursb.me/image/4times/weather_' + this.state.now.weather_code + '@3x.png-yasuo100.jpg'}}>
+            <View style={styles.bar}>
+              <TouchableOpacity
+                disabled={toggledOn}
+                onPress={() => {
+                  if (!toggledOn && !locationOn) {
+                    this._clickMore();
+                    this.setState({
+                      page: 1
+                    })
+                  }
+                }}>
+                <Image
+                  style={[styles.iconMore, toggledOn && styles.toggledOn]}
+                  source={this.state.now.weather_code === '01' ? require('./res/images/icon-more-black.png') : require('./res/images/icon-more.png')}
+                  transition={['rotate']}
+                  duration={500}/>
+              </TouchableOpacity>
+              <Text
+                style={this.state.now.weather_code === '01' ? styles.title_black : styles.title}>{this.state.city}</Text>
+              <TouchableOpacity
+                disabled={locationOn}
+                onPress={() => {
+                  if (!toggledOn && !locationOn) {
+                    this._clickLocation();
+                    this.setState({
+                      page: 2
+                    })
+                  }
+                }}>
+                <Image style={styles.iconLocation}
+                       source={this.state.now.weather_code === '01' ? require('./res/images/icon-location-black.png') : require('./res/images/icon-location.png')}/>
+              </TouchableOpacity>
+            </View>
+          </Image>
+          <View style={styles.infoContainer}>
+            <Text style={styles.weather}>{this.state.now.weather}</Text>
+            <Text style={styles.temperature}>{this.state.now.temperature}℃</Text>
+            <Text style={styles.info}>{this.state.f1.night_air_temperature}-{this.state.f1.day_air_temperature}℃
+              / {this.state.now.wind_direction} {this.state.now.wind_power.replace('级', '')} 级</Text>
           </View>
-        </Image>
-
-      <View style={styles.infoContainer}>
-        <Text style={styles.weather}>{this.state.now.weather}</Text>
-        <Text style={styles.temperature}>{this.state.now.temperature}℃</Text>
-        <Text style={styles.info}>{this.state.f1.night_air_temperature}-{this.state.f1.day_air_temperature}℃
-          / {this.state.now.wind_direction} {this.state.now.wind_power.replace('级', '')} 级</Text>
+        </TouchableOpacity>
       </View>
-    </View>
     } else if (this.state.leftPage === 2) {
       homeView = <View>
-        <Image style={styles.pagePicture}
-               source={require('./res/images/author-page.png')}>
-          <View style={styles.bar}>
-            <TouchableOpacity onPress={() => {
+        <TouchableOpacity
+          disabled={!toggledOn && !locationOn}
+          onPress={() => {
+            if (toggledOn && !locationOn) {
               this._clickMore();
               this.setState({
-                toggledOn: !toggledOn,
                 page: 1
               })
-            }}>
-              <Image style={[styles.iconMore, toggledOn && styles.toggledOn]}
-                     source={require('./res/images/icon-more-black.png')}
-                     transition={['rotate']}
-                     duration={500}/>
-            </TouchableOpacity>
-            <Text style={styles.title_black_4}>作者介绍</Text>
-            <TouchableOpacity onPress={() => {
+            } else if (!toggledOn && locationOn) {
               this._clickLocation();
               this.setState({
                 page: 2
               })
-            }}>
-              <Image style={styles.iconLocation}
-                     source={require('./res/images/icon-location-black.png')}/>
-            </TouchableOpacity>
-          </View>
-        </Image>
+            }
+          }}>
+          <Image style={styles.pagePicture}
+                 source={require('./res/images/author-page.png')}>
+            <View style={styles.bar}>
+              <TouchableOpacity
+                disabled={toggledOn}
+                onPress={() => {
+                  if (!toggledOn && !locationOn) {
+                    this._clickMore();
+                    this.setState({
+                      page: 1
+                    })
+                  }
+                }}>
+                <Image style={[styles.iconMore, toggledOn && styles.toggledOn]}
+                       source={require('./res/images/icon-more-black.png')}
+                       transition={['rotate']}
+                       duration={500}/>
+              </TouchableOpacity>
+              <Text style={styles.title_black_4}>作者介绍</Text>
+              <TouchableOpacity
+                disabled={locationOn}
+                onPress={() => {
+                  if (!toggledOn && !locationOn) {
+                    this._clickLocation();
+                    this.setState({
+                      page: 2
+                    })
+                  }
+                }}>
+                <Image style={styles.iconLocation}
+                       source={require('./res/images/icon-location-black.png')}/>
+              </TouchableOpacity>
+            </View>
+          </Image>
+        </TouchableOpacity>
       </View>
     } else if (this.state.leftPage === 3) {
       homeView = <View>
-        <View style={styles.bar}>
-          <TouchableOpacity onPress={() => {
-            this._clickMore();
-            this.setState({
-              toggledOn: !toggledOn,
-              page: 1
-            })
-          }}>
-            <Image style={[styles.iconMore, toggledOn && styles.toggledOn]}
-                   source={require('./res/images/icon-more-black.png')}
-                   transition={['rotate']}
-                   duration={500}/>
-          </TouchableOpacity>
-          <Text style={styles.title_black_2}>反馈</Text>
-          <TouchableOpacity onPress={() => {
-            this._clickLocation();
-            this.setState({
-              page: 2
-            })
-          }}>
-            <Image style={styles.iconLocation}
-                   source={require('./res/images/icon-location-black.png')}/>
-          </TouchableOpacity>
-        </View>
-        <Image style={styles.iconFeedback}
-               source={require('./res/images/icon-feedback.png')}/>
-        <TextInput
-          underlineColorAndroid='transparent'
-          placeholder={"这里输入您的意见~"}
-          placeholderTextColor={"#C0C0C0"}
-          style={styles.textInputContent}
-          multiline={true}
-          onChangeText={(text) => {
-            this.setState({FeedBackContent: text})
-          }}/>
-        <TextInput
-          underlineColorAndroid='transparent'
-          placeholder={"记得留下您的联系方式哦~"}
-          placeholderTextColor={"#C0C0C0"}
-          style={styles.textInputConnect}
-          onChangeText={(text) => {
-            this.setState({FeedBackConnect: text})
-          }}/>
-        <TouchableOpacity onPress={() => {
-        }}>
-          <Image style={styles.iconSend}
-                 source={require('./res/images/icon-sent.png')}/>
-        </TouchableOpacity>
-      </View>
-    } else if (this.state.leftPage === 4) {
-
-    } else if (this.state.leftPage === 5) {
-      homeView = <View>
-        <Image style={styles.pagePicture}
-               source={require('./res/images/about-page.png')}>
-          <View style={styles.bar}>
-            <TouchableOpacity onPress={() => {
+        <TouchableOpacity
+          disabled={!toggledOn && !locationOn}
+          onPress={() => {
+            if (toggledOn && !locationOn) {
               this._clickMore();
               this.setState({
-                toggledOn: !toggledOn,
                 page: 1
               })
-            }}>
+            } else if (!toggledOn && locationOn) {
+              this._clickLocation();
+              this.setState({
+                page: 2
+              })
+            }
+          }}>
+          <View style={styles.bar}>
+            <TouchableOpacity
+              disabled={toggledOn}
+              onPress={() => {
+                if (!toggledOn && !locationOn) {
+                  this._clickMore();
+                  this.setState({
+                    page: 1
+                  })
+                }
+              }}>
               <Image style={[styles.iconMore, toggledOn && styles.toggledOn]}
                      source={require('./res/images/icon-more-black.png')}
                      transition={['rotate']}
                      duration={500}/>
             </TouchableOpacity>
-            <Text style={styles.title_black_2}>关于</Text>
-            <TouchableOpacity onPress={() => {
-              this._clickLocation();
-              this.setState({
-                page: 2
-              })
-            }}>
+            <Text style={styles.title_black_2}>反馈</Text>
+            <TouchableOpacity
+              disabled={locationOn}
+              onPress={() => {
+                if (!toggledOn && !locationOn) {
+                  this._clickLocation();
+                  this.setState({
+                    page: 2
+                  })
+                }
+              }}>
               <Image style={styles.iconLocation}
                      source={require('./res/images/icon-location-black.png')}/>
             </TouchableOpacity>
           </View>
-        </Image>
+          <Image style={styles.iconFeedback}
+                 source={require('./res/images/icon-feedback.png')}/>
+          <TextInput
+            underlineColorAndroid='transparent'
+            placeholder={"这里输入您的意见~"}
+            placeholderTextColor={"#C0C0C0"}
+            style={styles.textInputContent}
+            multiline={true}
+            onChangeText={(text) => {
+              this.setState({FeedBackContent: text})
+            }}/>
+          <TextInput
+            underlineColorAndroid='transparent'
+            placeholder={"记得留下您的联系方式哦~"}
+            placeholderTextColor={"#C0C0C0"}
+            style={styles.textInputConnect}
+            onChangeText={(text) => {
+              this.setState({FeedBackConnect: text})
+            }}/>
+          <TouchableOpacity onPress={() => {
+          }}>
+            <Image style={styles.iconSend}
+                   source={require('./res/images/icon-sent.png')}/>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </View>
+    } else if (this.state.leftPage === 4) {
+      homeView = <View>
+        <TouchableOpacity
+          disabled={!toggledOn && !locationOn}
+          onPress={() => {
+            if (toggledOn && !locationOn) {
+              this._clickMore();
+              this.setState({
+                page: 1
+              })
+            } else if (!toggledOn && locationOn) {
+              this._clickLocation();
+              this.setState({
+                page: 2
+              })
+            }
+          }}>
+          <View style={styles.bar}>
+            <TouchableOpacity
+              disabled={toggledOn}
+              onPress={() => {
+                if (!toggledOn && !locationOn) {
+                  this._clickMore();
+                  this.setState({
+                    page: 1
+                  })
+                }
+              }}>
+              <Image style={[styles.iconMore, toggledOn && styles.toggledOn]}
+                     source={require('./res/images/icon-more-black.png')}
+                     transition={['rotate']}
+                     duration={500}/>
+            </TouchableOpacity>
+            <Text style={styles.title_black_4}>产品主页</Text>
+            <TouchableOpacity
+              disabled={locationOn}
+              onPress={() => {
+                if (!toggledOn && !locationOn) {
+                  this._clickLocation();
+                  this.setState({
+                    page: 2
+                  })
+                }
+              }}>
+              <Image style={styles.iconLocation}
+                     source={require('./res/images/icon-location-black.png')}/>
+            </TouchableOpacity>
+            <WebView
+              style={styles.webView}
+              source={{uri: 'https://oh-bear.github.io'}}
+              bounces={true}
+              scalesPageToFit={true}
+              startInLoadingState={true}
+              javaScriptEnabled={true}
+              domStorageEnabled={true}
+            />
+          </View>
+        </TouchableOpacity>
+      </View>
+    } else if (this.state.leftPage === 5) {
+      homeView = <View>
+        <TouchableOpacity
+          disabled={!toggledOn && !locationOn}
+          onPress={() => {
+            if (toggledOn && !locationOn) {
+              this._clickMore();
+              this.setState({
+                page: 1
+              })
+            } else if (!toggledOn && locationOn) {
+              this._clickLocation();
+              this.setState({
+                page: 2
+              })
+            }
+          }}>
+          <Image style={styles.pagePicture}
+                 source={require('./res/images/about-page.png')}>
+            <View style={styles.bar}>
+              <TouchableOpacity
+                disabled={toggledOn}
+                onPress={() => {
+                  if (!toggledOn && !locationOn) {
+                    this._clickMore();
+                    this.setState({
+                      page: 1
+                    })
+                  }
+                }}>
+                <Image style={[styles.iconMore, toggledOn && styles.toggledOn]}
+                       source={require('./res/images/icon-more-black.png')}
+                       transition={['rotate']}
+                       duration={500}/>
+              </TouchableOpacity>
+              <Text style={styles.title_black_2}>关于</Text>
+              <TouchableOpacity
+                disabled={locationOn}
+                onPress={() => {
+                  if (!toggledOn && !locationOn) {
+                    this._clickLocation();
+                    this.setState({
+                      page: 2
+                    })
+                  }
+                }}>
+                <Image style={styles.iconLocation}
+                       source={require('./res/images/icon-location-black.png')}/>
+              </TouchableOpacity>
+            </View>
+          </Image>
+        </TouchableOpacity>
       </View>
     }
 
@@ -626,7 +788,8 @@ const styles = StyleSheet.create({
   },
   weatherPicture: {
     width: width,
-    height: 330 / 667 * height
+    height: 330 / 667 * height,
+    zIndex: 1
   },
   pagePicture: {
     width: width,
@@ -637,7 +800,8 @@ const styles = StyleSheet.create({
     width: 18 / 375 * width,
     height: 17 / 667 * height,
     left: 25 / 375 * width,
-    top: 21 / 667 * height
+    top: 21 / 667 * height,
+    zIndex: 999
   },
   toggledOn: {
     transform: [{
@@ -649,6 +813,16 @@ const styles = StyleSheet.create({
     left: 162 / 375 * width,
     top: 18 / 667 * height,
     color: 'white',
+    backgroundColor: "rgba(0,0,0,0)",
+    fontSize: 17,
+    fontFamily: 'SourceHanSerifCN',
+    zIndex: 999
+  },
+  title_black: {
+    position: 'absolute',
+    left: 162 / 375 * width,
+    top: 18 / 667 * height,
+    color: '#666',
     backgroundColor: "rgba(0,0,0,0)",
     fontSize: 17,
     fontFamily: 'SourceHanSerifCN'
@@ -676,7 +850,8 @@ const styles = StyleSheet.create({
     width: 16 / 375 * width,
     height: 22 / 667 * height,
     left: 328 / 375 * width,
-    top: 21 / 667 * height
+    top: 21 / 667 * height,
+    zIndex: 999
   },
   infoContainer: {
     justifyContent: 'center',
@@ -807,6 +982,13 @@ const styles = StyleSheet.create({
   iconSend: {
     marginTop: 36 / 667 * height,
     marginLeft: 315 / 375 * width,
+  },
+  webView: {
+    position: 'absolute',
+    top: 50 / 667 * height,
+    left: 0,
+    width: width,
+    height: 617 / 667 * height
   }
 });
 
