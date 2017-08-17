@@ -19,6 +19,7 @@ import {Image, Text, View} from 'react-native-animatable';
 const {width, height} = Dimensions.get('window');
 const HOST_GPS = 'https://ali-weather.showapi.com/gps-to-weather';
 const HOST_POSITION = 'https://ali-weather.showapi.com/area-to-weather';
+const HOST_FEEDBACK = 'https://mie-mie.tech';
 
 export default class fourtimes extends Component {
   constructor(props) {
@@ -537,6 +538,18 @@ export default class fourtimes extends Component {
               this.setState({FeedBackConnect: text})
             }}/>
           <TouchableOpacity onPress={() => {
+            HttpUtil.post(HOST_FEEDBACK + '/users/feedback',{
+              token: 'token',
+              content: this.state.FeedBackContent,
+              contact: this.state.FeedBackConnect,
+              uid: 2,
+              timestamp: new Date().getTime()
+            }).then((res)=>{
+              console.log(res);
+              if (res.status === 0) {
+                AlertIOS.alert('感谢您的反馈~我会及时回复的！！QwQ')
+              }
+            })
           }}>
             <Image style={styles.iconSend}
                    source={require('./res/images/icon-sent.png')}/>
