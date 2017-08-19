@@ -82,7 +82,7 @@ export default class fourtimes extends Component {
           });
           HttpUtil.get(HOST_GPS + '?from=1&lat=' + latitude + '&lng=' + longitude + '&need3HourForcast=0&needAlarm=0&needHourData=0&needIndex=0&needMoreDay=1')
             .then(res => {
-              if (res.showapi_res_code === 0) {
+              if (res.showapi_res_body.ret_code === 0) {
                 console.log(res);
                 this.setState({
                   city: res.showapi_res_body.cityInfo.c5 + '市',
@@ -94,9 +94,88 @@ export default class fourtimes extends Component {
                   getPosition: false
                 });
               } else {
-                AlertIOS('Sorry! 无法自动定位到您所在的城市。')
+                this.setState({
+                  city: '广州市',
+                  now: {
+                    weather_code: '01',
+                    temperature: '23',
+                    wind_direction: '东南风',
+                    wind_power: '2级',
+                    weather: '多云'
+                  },
+                  f1: {
+                    night_air_temperature: '15',
+                    day_air_temperature: '25',
+                    day_weather_code: '00',
+                    day_weather: '晴',
+                    weekday: 4
+                  },
+                  f2: {
+                    night_air_temperature: '16',
+                    day_air_temperature: '27',
+                    day_weather_code: '00',
+                    day_weather: '晴',
+                    weekday: 5
+                  },
+                  f3: {
+                    night_air_temperature: '13',
+                    day_air_temperature: '25',
+                    day_weather_code: '01',
+                    day_weather: '多云',
+                    weekday: 6
+                  },
+                  f4: {
+                    night_air_temperature: '15',
+                    day_air_temperature: '24',
+                    day_weather_code: '03',
+                    day_weather: '小雨',
+                    weekday: 7
+                  }
+                });
+                AlertIOS.alert('Sorry! 无法自动定位到您所在的城市，请手动定位。')
               }
             })
+            .catch(err => {
+              this.setState({
+                city: '广州市',
+                now: {
+                  weather_code: '01',
+                  temperature: '23',
+                  wind_direction: '东南风',
+                  wind_power: '2级',
+                  weather: '多云'
+                },
+                f1: {
+                  night_air_temperature: '15',
+                  day_air_temperature: '25',
+                  day_weather_code: '00',
+                  day_weather: '晴',
+                  weekday: 4
+                },
+                f2: {
+                  night_air_temperature: '16',
+                  day_air_temperature: '27',
+                  day_weather_code: '00',
+                  day_weather: '晴',
+                  weekday: 5
+                },
+                f3: {
+                  night_air_temperature: '13',
+                  day_air_temperature: '25',
+                  day_weather_code: '01',
+                  day_weather: '多云',
+                  weekday: 6
+                },
+                f4: {
+                  night_air_temperature: '15',
+                  day_air_temperature: '24',
+                  day_weather_code: '03',
+                  day_weather: '小雨',
+                  weekday: 7
+                }
+              });
+              AlertIOS.alert('Sorry! 无法自动定位到您所在的城市，请手动定位。')
+            });
         }
       },
       (error) => {
@@ -269,8 +348,85 @@ export default class fourtimes extends Component {
           placeholderTextColor={"#C0C0C0"}
           style={styles.textInputCity}
           returnKeyType='done'
-          onSubmitEditing={()=>{
+          onSubmitEditing={() => {
             HttpUtil.get(HOST_POSITION + '?area=' + this.state.cityText + '&need3HourForcast=0&needAlarm=0&needHourData=0&needIndex=0&needMoreDay=1')
+              .then(res => {
+                console.log(res);
+                if (res.showapi_res_body.ret_code === 0) {
+                  this.state.city = res.showapi_res_body.cityInfo.c5 + '市';
+                  this.state.now = res.showapi_res_body.now;
+                  this.state.f1 = res.showapi_res_body.f1;
+                  this.state.f2 = res.showapi_res_body.f2;
+                  this.state.f3 = res.showapi_res_body.f3;
+                  this.state.f4 = res.showapi_res_body.f4;
+                  this.state.citys = this.state.citys + this.state.city + ',';
+                  AsyncStorage.setItem('citys', this.state.citys);
+                  this._clickLocation()
+                } else {
+                  AlertIOS.alert('查询不到该城市！')
+                }
+              })
+              .catch(err => {
+                AlertIOS.alert('查询不到该城市！')
+              })
+          }}
+          onChangeText={(text) => {
+            this.setState({cityText: text})
+          }}/>
+        <View style={styles.cityContainer}>
+          <Text style={styles.alwaysCity}>常用城市</Text>
+          <TouchableOpacity onPress={() => {
+            HttpUtil.get(HOST_POSITION + '?area=' + this.state.citys.substr(0, this.state.citys.length - 1).split(',')[this.state.citys.substr(0, this.state.citys.length - 1).split(',').length - 1] + '&need3HourForcast=0&needAlarm=0&needHourData=0&needIndex=0&needMoreDay=1')
+              .then(res => {
+                console.log(res);
+                if (res.showapi_res_body.ret_code === 0) {
+                  this.state.city = res.showapi_res_body.cityInfo.c5 + '市';
+                  this.state.now = res.showapi_res_body.now;
+                  this.state.f1 = res.showapi_res_body.f1;
+                  this.state.f2 = res.showapi_res_body.f2;
+                  this.state.f3 = res.showapi_res_body.f3;
+                  this.state.f4 = res.showapi_res_body.f4;
+                  this.state.citys = this.state.citys + this.state.city + ',';
+                  AsyncStorage.setItem('citys', this.state.citys);
+                  this._clickLocation()
+                } else {
+                  AlertIOS.alert('查询不到该城市！')
+                }
+              })
+              .catch(err => {
+                AlertIOS.alert('查询不到该城市！')
+              })
+          }}>
+            <Text
+              style={styles.alwaysCityContent}>{this.state.citys.substr(0, this.state.citys.length - 1).split(',')[this.state.citys.substr(0, this.state.citys.length - 1).split(',').length - 1]}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => {
+            HttpUtil.get(HOST_POSITION + '?area=' + this.state.citys.substr(0, this.state.citys.length - 1).split(',')[this.state.citys.substr(0, this.state.citys.length - 1).split(',').length - 2] + '&need3HourForcast=0&needAlarm=0&needHourData=0&needIndex=0&needMoreDay=1')
+              .then(res => {
+                console.log(res);
+                if (res.showapi_res_body.ret_code === 0) {
+                  this.state.city = res.showapi_res_body.cityInfo.c5 + '市';
+                  this.state.now = res.showapi_res_body.now;
+                  this.state.f1 = res.showapi_res_body.f1;
+                  this.state.f2 = res.showapi_res_body.f2;
+                  this.state.f3 = res.showapi_res_body.f3;
+                  this.state.f4 = res.showapi_res_body.f4;
+                  this.state.citys = this.state.citys + this.state.city + ',';
+                  AsyncStorage.setItem('citys', this.state.citys);
+                  this._clickLocation()
+                } else {
+                  AlertIOS.alert('查询不到该城市！')
+                }
+              })
+              .catch(err => {
+                AlertIOS.alert('查询不到该城市！')
+              })
+          }}>
+            <Text
+              style={styles.alwaysCityContent}>{this.state.citys.substr(0, this.state.citys.length - 1).split(',')[this.state.citys.substr(0, this.state.citys.length - 1).split(',').length - 2]}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => {
+            HttpUtil.get(HOST_POSITION + '?area=' + this.state.citys.substr(0, this.state.citys.length - 1).split(',')[this.state.citys.substr(0, this.state.citys.length - 1).split(',').length - 3] + '&need3HourForcast=0&needAlarm=0&needHourData=0&needIndex=0&needMoreDay=1')
               .then(res => {
                 console.log(res);
                 if (res.showapi_res_code === 0) {
@@ -284,74 +440,15 @@ export default class fourtimes extends Component {
                   AsyncStorage.setItem('citys', this.state.citys);
                   this._clickLocation()
                 } else {
-                  AlertIOS('查询不到该城市！')
+                  AlertIOS.alert('查询不到该城市！')
                 }
               })
-          }}
-          onChangeText={(text) => {
-            this.setState({cityText: text})
-          }}/>
-        <View style={styles.cityContainer}>
-          <Text style={styles.alwaysCity}>常用城市</Text>
-          <TouchableOpacity onPress={()=>{
-            HttpUtil.get(HOST_POSITION + '?area=' + this.state.citys.substr(0, this.state.citys.length - 1).split(',')[this.state.citys.substr(0, this.state.citys.length - 1).split(',').length - 1] + '&need3HourForcast=0&needAlarm=0&needHourData=0&needIndex=0&needMoreDay=1').then(res => {
-              console.log(res);
-              if (res.showapi_res_code === 0) {
-                this.state.city = res.showapi_res_body.cityInfo.c5 + '市';
-                this.state.now = res.showapi_res_body.now;
-                this.state.f1 = res.showapi_res_body.f1;
-                this.state.f2 = res.showapi_res_body.f2;
-                this.state.f3 = res.showapi_res_body.f3;
-                this.state.f4 = res.showapi_res_body.f4;
-                this.state.citys = this.state.citys + this.state.city + ',';
-                AsyncStorage.setItem('citys', this.state.citys);
-                this._clickLocation()
-              } else {
-                AlertIOS('查询不到该城市！')
-              }
-            })
+              .catch(err => {
+                AlertIOS.alert('查询不到该城市！')
+              })
           }}>
-            <Text style={styles.alwaysCityContent}>{this.state.citys.substr(0, this.state.citys.length - 1).split(',')[this.state.citys.substr(0, this.state.citys.length - 1).split(',').length - 1]}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={()=>{
-            HttpUtil.get(HOST_POSITION + '?area=' + this.state.citys.substr(0, this.state.citys.length - 1).split(',')[this.state.citys.substr(0, this.state.citys.length - 1).split(',').length - 2] + '&need3HourForcast=0&needAlarm=0&needHourData=0&needIndex=0&needMoreDay=1').then(res => {
-              console.log(res);
-              if (res.showapi_res_code === 0) {
-                this.state.city = res.showapi_res_body.cityInfo.c5 + '市';
-                this.state.now = res.showapi_res_body.now;
-                this.state.f1 = res.showapi_res_body.f1;
-                this.state.f2 = res.showapi_res_body.f2;
-                this.state.f3 = res.showapi_res_body.f3;
-                this.state.f4 = res.showapi_res_body.f4;
-                this.state.citys = this.state.citys + this.state.city + ',';
-                AsyncStorage.setItem('citys', this.state.citys);
-                this._clickLocation()
-              } else {
-                AlertIOS('查询不到该城市！')
-              }
-            })
-          }}>
-            <Text style={styles.alwaysCityContent}>{this.state.citys.substr(0, this.state.citys.length - 1).split(',')[this.state.citys.substr(0, this.state.citys.length - 1).split(',').length - 2]}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={()=>{
-            HttpUtil.get(HOST_POSITION + '?area=' + this.state.citys.substr(0, this.state.citys.length - 1).split(',')[this.state.citys.substr(0, this.state.citys.length - 1).split(',').length - 3] + '&need3HourForcast=0&needAlarm=0&needHourData=0&needIndex=0&needMoreDay=1').then(res => {
-              console.log(res);
-              if (res.showapi_res_code === 0) {
-                this.state.city = res.showapi_res_body.cityInfo.c5 + '市';
-                this.state.now = res.showapi_res_body.now;
-                this.state.f1 = res.showapi_res_body.f1;
-                this.state.f2 = res.showapi_res_body.f2;
-                this.state.f3 = res.showapi_res_body.f3;
-                this.state.f4 = res.showapi_res_body.f4;
-                this.state.citys = this.state.citys + this.state.city + ',';
-                AsyncStorage.setItem('citys', this.state.citys);
-                this._clickLocation()
-              } else {
-                AlertIOS('查询不到该城市！')
-              }
-            })
-          }}>
-            <Text style={styles.alwaysCityContent}>{this.state.citys.substr(0, this.state.citys.length - 1).split(',')[this.state.citys.substr(0, this.state.citys.length - 1).split(',').length - 3]}</Text>
+            <Text
+              style={styles.alwaysCityContent}>{this.state.citys.substr(0, this.state.citys.length - 1).split(',')[this.state.citys.substr(0, this.state.citys.length - 1).split(',').length - 3]}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -538,13 +635,13 @@ export default class fourtimes extends Component {
               this.setState({FeedBackConnect: text})
             }}/>
           <TouchableOpacity onPress={() => {
-            HttpUtil.post(HOST_FEEDBACK + '/users/feedback',{
+            HttpUtil.post(HOST_FEEDBACK + '/users/feedback', {
               token: 'token',
               content: this.state.FeedBackContent,
               contact: this.state.FeedBackConnect,
               uid: 2,
               timestamp: new Date().getTime()
-            }).then((res)=>{
+            }).then((res) => {
               console.log(res);
               if (res.status === 0) {
                 AlertIOS.alert('感谢您的反馈~我会及时回复的！！QwQ')
