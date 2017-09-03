@@ -1,6 +1,6 @@
 # 四时：春水，夏云，秋月，冬岭
 
-四时：闪亮亮的天气应用（React Native）
+四时：闪亮亮的天气应用（React Native），App Store 中搜索四时即可下载，评分五星，曾排天气类付费榜第3。
 
 ![](http://airing.ursb.me/image/cover/4times.gif)
 
