@@ -4,13 +4,13 @@
  * @flow
  */
 
-import React, { Component } from 'react';
+import React, { Component } from 'react'
 import {
   AppRegistry,
   StyleSheet,
   Text,
   View
-} from 'react-native';
+} from 'react-native'
 
 export default class fourtimes extends Component {
   render() {
@@ -27,7 +27,7 @@ export default class fourtimes extends Component {
           Shake or press menu button for dev menu
         </Text>
       </View>
-    );
+    )
   }
 }
 
@@ -48,6 +48,6 @@ const styles = StyleSheet.create({
     color: '#333333',
     marginBottom: 5,
   },
-});
+})
 
-AppRegistry.registerComponent('fourtimes', () => fourtimes);
+AppRegistry.registerComponent('fourtimes', () => fourtimes)

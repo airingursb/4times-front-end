@@ -1,0 +1,60 @@
+{
+  "env": {
+    "browser": true,
+    "commonjs": true,
+    "es6": true
+  },
+  "extends": ["eslint:recommended"],
+  "parser": "babel-eslint",
+  "parserOptions": {
+    "ecmaFeatures": {
+      "experimentalObjectRestSpread": true,
+      "jsx": true
+    },
+    "sourceType": "module"
+  },
+  "plugins": [
+    "react",
+    "react-native"
+  ],
+  "rules": {
+    "indent": [
+      "error",
+      2
+    ],
+    "linebreak-style": [
+      2,
+      "unix"
+    ],
+    "quotes": [
+      2,
+      "single"
+    ],
+    "semi": [
+      2,
+      "never"
+    ],
+    "no-unused-vars": 0,
+    "no-var": 2,
+    "no-mixed-spaces-and-tabs": 2,
+    "no-multi-spaces": 2,
+    "no-console": 1,
+    "no-use-before-define": 0,
+    "no-undef": 0,
+    "keyword-spacing": 2,
+    "space-before-function-paren": 0,
+    "block-spacing": 2,
+    "eol-last": 2,
+    "key-spacing": 2,
+    "no-const-assign": 2,
+    "space-in-parens": 2,
+    "space-before-blocks": 2,
+    "semi-spacing": 2,
+    "rest-spread-spacing": 2,
+    "no-redeclare": 2,
+    "spaced-comment": 2,
+    "comma-dangle": 0,
+    "comma-style": 2,
+    "dot-location": 0
+  }
+}
